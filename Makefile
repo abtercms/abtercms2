@@ -5,7 +5,7 @@ generate:
 	go generate $(PACKAGES)
 
 .PHONY: build
-build:
+build: generate
 	go test ./...
 	sam build
 
@@ -26,7 +26,7 @@ curl-get-website-abc:
 	curl http:/127.0.0.1:3000/websites/abc
 
 .PHONY: sam-local
-sam-local:
+sam-local: build
 	sam local start-api
 
 .PHONY: clean

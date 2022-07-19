@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
@@ -29,15 +30,16 @@ type Handler struct {
 	repo repo
 }
 
-func getHandler(sdkConfig aws.Config) *Handler {
+func getHandler(sdkConfig aws.Config, isLocal bool) *Handler {
 	return &Handler{
-		repo: dynamo.NewRepo(sdkConfig),
+		repo: dynamo.NewRepo(sdkConfig, isLocal),
 	}
 }
 
 func (h *Handler) TestAny(ctx context.Context, req events.APIGatewayProxyRequest) (res events.APIGatewayProxyResponse, err error) {
 	log.Log().
 		Interface("request", req).
+		Interface("environ", os.Environ()).
 		Msg("testAny")
 
 	collection := map[string]string{

@@ -19,8 +19,11 @@ import (
 const (
 	limit int32 = 25
 
-	EnvAwsRegion = "AWS_REGION"
-	EnvTableName = "TABLE_NAME"
+	EnvAwsRegion   = "AWS_REGION"
+	EnvTableName   = "TABLE_NAME"
+	EnvAwsSamLocal = "AWS_SAM_LOCAL"
+
+	trueString = "true"
 
 	errUnmarshallRequest    = "failed to unmarshalling request, err: %w"
 	errInvalidID            = "primary key is required"
@@ -30,12 +33,14 @@ const (
 var (
 	awsRegion string
 	tableName string
+	isLocal   bool
 	sdkConfig aws.Config
 )
 
 func init() {
 	awsRegion = os.Getenv(EnvAwsRegion)
 	tableName = os.Getenv(EnvTableName)
+	isLocal = os.Getenv(EnvAwsSamLocal) == trueString
 
 	// UNIX Time is faster and smaller than most timestamps
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -55,8 +60,8 @@ func init() {
 }
 
 func main() {
-	lambda.Start(getHandler(sdkConfig).TestAny)
-	//lambda.Start(getRouter(getHandler(sdkConfig)).Handler)
+	lambda.Start(getHandler(sdkConfig, isLocal).TestAny)
+	//lambda.Start(getRouter(getHandler(sdkConfig, isLocal)).Handler)
 }
 
 type handler interface {

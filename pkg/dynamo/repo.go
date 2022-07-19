@@ -35,9 +35,11 @@ type Repo struct {
 	db *dynamodb.Client
 }
 
-func NewRepo(sdkConfig aws.Config) *Repo {
+func NewRepo(sdkConfig aws.Config, isLocal bool) *Repo {
 	db := dynamodb.NewFromConfig(sdkConfig, func(o *dynamodb.Options) {
-		o.EndpointResolver = dynamodb.EndpointResolverFromURL("http://127.0.0.1:8000")
+		if isLocal {
+			o.EndpointResolver = dynamodb.EndpointResolverFromURL("http://127.0.0.1:8000")
+		}
 	})
 	return &Repo{
 		db: db,
