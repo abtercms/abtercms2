@@ -1,11 +1,14 @@
 PACKAGES := $(shell find . -name *.go | grep -v -e vendor | xargs -n1 dirname | sort -u)
 
+default: build
+
 .PHONY: generate
 generate:
 	go generate $(PACKAGES)
 
 .PHONY: build
 build: generate
+	golangci-lint run
 	go test ./...
 	sam build
 

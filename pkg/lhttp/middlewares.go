@@ -9,10 +9,10 @@ import (
 )
 
 func LoggerMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
-	return func(ctx context.Context, req events.APIGatewayProxyRequest) (res events.APIGatewayProxyResponse, err error) {
+	return func(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 		path := req.HTTPMethod + " " + req.Path
 
-		res, err = next(ctx, req)
+		res, err := next(ctx, req)
 
 		if err != nil {
 			log.Error().
@@ -30,14 +30,5 @@ func LoggerMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
 			Msg("success")
 
 		return res, nil
-	}
-}
-
-func AuthMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
-	return func(ctx context.Context, req events.APIGatewayProxyRequest) (res events.APIGatewayProxyResponse, err error) {
-		// TODO: Yes
-		res, err = next(ctx, req)
-
-		return res, err
 	}
 }

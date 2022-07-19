@@ -8,7 +8,6 @@ import (
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -22,35 +21,37 @@ const (
 	EnvAwsRegion                = "AWS_REGION"
 	EnvTableName                = "TABLE_NAME"
 	EnvAwsSamLocal              = "AWS_SAM_LOCAL"
-	EnvAwsDynamoDbLocalEndpoint = "AWS_DYNAMODB_LOCAL_ENDPOINT"
+	EnvAwsDynamoDBLocalEndpoint = "AWS_DYNAMODB_LOCAL_ENDPOINT"
 
 	trueString = "true"
 
-	errUnmarshallRequest    = "failed to unmarshalling request, err: %w"
-	errInvalidID            = "primary key is required"
-	errPrimaryKeyNotAllowed = "primary key is not allowed when creating entity: %s"
+	errUnmarshallRequest          = "failed to unmarshalling request, err: %w"
+	errInvalidIDDetail            = "value in path: \"%s\", in payload: \"%s\", err: %w"
+	errPrimaryKeyNotAllowedDetail = "primary key: \"%s\", err: %w"
 )
 
 var (
-	awsRegion        string
-	tableName        string
-	dynamoDbEndpoint string
-	sdkConfig        aws.Config
+	errPrimaryKeyNotAllowed = lhttp.NewProblem(http.StatusBadRequest, "", "primary key is not allowed when creating entity.")
+	errInvalidID            = lhttp.NewProblem(http.StatusBadRequest, "", "received ids are invalid.")
 )
 
-func init() {
-	awsRegion = os.Getenv(EnvAwsRegion)
-	tableName = os.Getenv(EnvTableName)
+func main() {
+	var (
+		awsRegion        = os.Getenv(EnvAwsRegion)
+		tableName        = os.Getenv(EnvTableName)
+		dynamoDBEndpoint = ""
+	)
+
 	if os.Getenv(EnvAwsSamLocal) == trueString {
-		dynamoDbEndpoint = os.Getenv(EnvAwsDynamoDbLocalEndpoint)
+		dynamoDBEndpoint = os.Getenv(EnvAwsDynamoDBLocalEndpoint)
 	}
 
 	// UNIX Time is faster and smaller than most timestamps
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 
-	var err error
-	sdkConfig, err = config.LoadDefaultConfig(context.TODO(), func(o *config.LoadOptions) error {
+	sdkConfig, err := config.LoadDefaultConfig(context.TODO(), func(o *config.LoadOptions) error {
 		o.Region = awsRegion
+
 		return nil
 	})
 	if err != nil {
@@ -60,10 +61,8 @@ func init() {
 			Str(EnvTableName, tableName).
 			Msg("cannot establish connection with dynamodb")
 	}
-}
 
-func main() {
-	lambda.Start(getRouter(getHandler(sdkConfig, dynamoDbEndpoint)).Handler)
+	lambda.Start(getRouter(getHandler(sdkConfig, tableName, dynamoDBEndpoint)).Handler)
 }
 
 type handler interface {
@@ -76,7 +75,7 @@ type handler interface {
 }
 
 func getRouter(h handler) *lmdrouter.Router {
-	router := lmdrouter.NewRouter("/websites", lhttp.LoggerMiddleware, lhttp.AuthMiddleware)
+	router := lmdrouter.NewRouter("/websites", lhttp.LoggerMiddleware)
 	router.Route(http.MethodGet, "", h.RetrieveCollection)
 	router.Route(http.MethodPost, "", h.CreateEntity)
 	router.Route(http.MethodGet, "/:id", h.RetrieveEntity)

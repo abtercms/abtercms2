@@ -16,13 +16,18 @@ import (
 
 func TestRouter(t *testing.T) {
 	// hack needed because zerolog gets a global log builder
-	l := log.Logger
-	log.Logger = zerolog.Nop()
-	defer func() {
-		log.Logger = l
-	}()
+	{
+		l := log.Logger
+
+		log.Logger = zerolog.Nop()
+		defer func() {
+			log.Logger = l
+		}()
+	}
 
 	t.Run("retrieve collection", func(t *testing.T) {
+		t.Parallel()
+
 		// stubs
 		ctx := context.Background()
 		requestStub := events.APIGatewayProxyRequest{
@@ -35,16 +40,16 @@ func TestRouter(t *testing.T) {
 		}
 
 		// mocks
-		h := &mocks.Handler{}
-		h.On("RetrieveCollection", ctx, requestStub).
+		handlerMock := &mocks.Handler{}
+		handlerMock.On("RetrieveCollection", ctx, requestStub).
 			Once().
 			Return(responseStub, nil)
 
 		// system under test
-		r := getRouter(h)
+		sut := getRouter(handlerMock)
 
 		// execute
-		res, err := r.Handler(ctx, requestStub)
+		res, err := sut.Handler(ctx, requestStub)
 
 		// asserts
 		assert.NoError(t, err)
@@ -52,6 +57,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("create entity", func(t *testing.T) {
+		t.Parallel()
+
 		// stubs
 		ctx := context.Background()
 		requestStub := events.APIGatewayProxyRequest{
@@ -64,16 +71,16 @@ func TestRouter(t *testing.T) {
 		}
 
 		// mocks
-		h := &mocks.Handler{}
-		h.On("CreateEntity", ctx, requestStub).
+		handlerMock := &mocks.Handler{}
+		handlerMock.On("CreateEntity", ctx, requestStub).
 			Once().
 			Return(responseStub, nil)
 
 		// system under test
-		r := getRouter(h)
+		sut := getRouter(handlerMock)
 
 		// execute
-		res, err := r.Handler(ctx, requestStub)
+		res, err := sut.Handler(ctx, requestStub)
 
 		// asserts
 		assert.NoError(t, err)
@@ -81,6 +88,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("retrieve entity", func(t *testing.T) {
+		t.Parallel()
+
 		// stubs
 		ctx := context.Background()
 		requestStub := events.APIGatewayProxyRequest{
@@ -94,16 +103,16 @@ func TestRouter(t *testing.T) {
 		}
 
 		// mocks
-		h := &mocks.Handler{}
-		h.On("RetrieveEntity", ctx, requestStub).
+		handlerMock := &mocks.Handler{}
+		handlerMock.On("RetrieveEntity", ctx, requestStub).
 			Once().
 			Return(responseStub, nil)
 
 		// system under test
-		r := getRouter(h)
+		sut := getRouter(handlerMock)
 
 		// execute
-		res, err := r.Handler(ctx, requestStub)
+		res, err := sut.Handler(ctx, requestStub)
 
 		// asserts
 		assert.NoError(t, err)
@@ -111,6 +120,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("update entity", func(t *testing.T) {
+		t.Parallel()
+
 		// stubs
 		ctx := context.Background()
 		requestStub := events.APIGatewayProxyRequest{
@@ -124,16 +135,16 @@ func TestRouter(t *testing.T) {
 		}
 
 		// mocks
-		h := &mocks.Handler{}
-		h.On("UpdateEntity", ctx, requestStub).
+		handlerMock := &mocks.Handler{}
+		handlerMock.On("UpdateEntity", ctx, requestStub).
 			Once().
 			Return(responseStub, nil)
 
 		// system under test
-		r := getRouter(h)
+		sut := getRouter(handlerMock)
 
 		// execute
-		res, err := r.Handler(ctx, requestStub)
+		res, err := sut.Handler(ctx, requestStub)
 
 		// asserts
 		assert.NoError(t, err)
@@ -141,6 +152,8 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("delete entity", func(t *testing.T) {
+		t.Parallel()
+
 		// stubs
 		ctx := context.Background()
 		requestStub := events.APIGatewayProxyRequest{
@@ -154,16 +167,16 @@ func TestRouter(t *testing.T) {
 		}
 
 		// mocks
-		h := &mocks.Handler{}
-		h.On("DeleteEntity", ctx, requestStub).
+		handlerMock := &mocks.Handler{}
+		handlerMock.On("DeleteEntity", ctx, requestStub).
 			Once().
 			Return(responseStub, nil)
 
 		// system under test
-		r := getRouter(h)
+		sut := getRouter(handlerMock)
 
 		// execute
-		res, err := r.Handler(ctx, requestStub)
+		res, err := sut.Handler(ctx, requestStub)
 
 		// asserts
 		assert.NoError(t, err)

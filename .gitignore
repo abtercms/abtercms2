@@ -12,6 +12,7 @@ scm-source.json
 user.json
 client.json
 /config.yaml
+samconfig.toml
 
 # Folders
 .local
