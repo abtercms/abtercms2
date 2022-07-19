@@ -70,7 +70,7 @@ func (h *Handler) RetrieveCollection(ctx context.Context, req events.APIGatewayP
 	}
 
 	var collection []website
-	lastEvaluatedKey, scannedCount, err := h.repo.List(ctx, tableName, limit, dynamo.K1(params.ExclusiveStartKey), collection)
+	lastEvaluatedKey, scannedCount, err := h.repo.List(ctx, tableName, limit, dynamo.K1(params.ExclusiveStartKey), &collection)
 	if err != nil {
 		return lhttp.HandleError(err, nil)
 	}
@@ -112,7 +112,7 @@ func (h *Handler) RetrieveEntity(ctx context.Context, req events.APIGatewayProxy
 	}
 
 	var entity website
-	err = h.repo.Get(ctx, tableName, dynamo.K1(params.ID), entity)
+	err = h.repo.Get(ctx, tableName, dynamo.K1(params.ID), &entity)
 	if err != nil {
 		return lhttp.HandleError(err, nil)
 	}
