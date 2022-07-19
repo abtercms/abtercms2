@@ -19,7 +19,7 @@ func LoggerMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
 				Int("status", res.StatusCode).
 				Str("error", err.Error()).
 				Str("path", path).
-				Msg(err.Error())
+				Send()
 
 			return res, err
 		}
@@ -29,7 +29,7 @@ func LoggerMiddleware(next lmdrouter.Handler) lmdrouter.Handler {
 			Str("path", path).
 			Msg("success")
 
-		return res, err
+		return res, nil
 	}
 }
 

@@ -37,6 +37,10 @@ curl-get-website-abc:
 sam-local: build
 	sam local start-api
 
+.PHONY: local-dynamodb
+local-dynamodb:
+	java -Djava.library.path=./.local/DynamoDBLocal_lib -jar ./.local/DynamoDBLocal.jar -sharedDb
+
 .PHONY: clean
 clean:
 	rm -rvf pkg/mocks websites/mocks .aws-sam

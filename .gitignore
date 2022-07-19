@@ -14,7 +14,7 @@ client.json
 /config.yaml
 
 # Folders
-
+.local
 
 # Temporary files
 *~
