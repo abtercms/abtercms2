@@ -19,9 +19,10 @@ import (
 const (
 	limit int32 = 25
 
-	EnvAwsRegion   = "AWS_REGION"
-	EnvTableName   = "TABLE_NAME"
-	EnvAwsSamLocal = "AWS_SAM_LOCAL"
+	EnvAwsRegion           = "AWS_REGION"
+	EnvTableName           = "TABLE_NAME"
+	EnvAwsSamLocal         = "AWS_SAM_LOCAL"
+	EnvAwsDynamoDbEndpoint = "AWS_DYNAMODB_ENDPOINT"
 
 	trueString = "true"
 
@@ -31,16 +32,18 @@ const (
 )
 
 var (
-	awsRegion string
-	tableName string
-	isLocal   bool
-	sdkConfig aws.Config
+	awsRegion        string
+	tableName        string
+	dynamoDbEndpoint string
+	sdkConfig        aws.Config
 )
 
 func init() {
 	awsRegion = os.Getenv(EnvAwsRegion)
 	tableName = os.Getenv(EnvTableName)
-	isLocal = os.Getenv(EnvAwsSamLocal) == trueString
+	if os.Getenv(EnvAwsSamLocal) == trueString {
+		dynamoDbEndpoint = os.Getenv(EnvAwsDynamoDbEndpoint)
+	}
 
 	// UNIX Time is faster and smaller than most timestamps
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
@@ -60,8 +63,8 @@ func init() {
 }
 
 func main() {
-	lambda.Start(getHandler(sdkConfig, isLocal).TestAny)
-	//lambda.Start(getRouter(getHandler(sdkConfig, isLocal)).Handler)
+	lambda.Start(getHandler(sdkConfig, dynamoDbEndpoint).TestAny)
+	//lambda.Start(getRouter(getHandler(sdkConfig, dynamoDbEndpoint)).Handler)
 }
 
 type handler interface {

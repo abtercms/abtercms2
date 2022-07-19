@@ -57,6 +57,7 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           TABLE_NAME: !Ref WebsitesTable
+          AWS_DYNAMODB_ENDPOINT: "http://127.0.0.1:8000"
 
   WebsitesTable:
     Type: AWS::Serverless::SimpleTable

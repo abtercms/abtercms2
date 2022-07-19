@@ -30,9 +30,9 @@ type Handler struct {
 	repo repo
 }
 
-func getHandler(sdkConfig aws.Config, isLocal bool) *Handler {
+func getHandler(sdkConfig aws.Config, dynamoDbEndpoint string) *Handler {
 	return &Handler{
-		repo: dynamo.NewRepo(sdkConfig, isLocal),
+		repo: dynamo.NewRepo(sdkConfig, dynamoDbEndpoint),
 	}
 }
 
