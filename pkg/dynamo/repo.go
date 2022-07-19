@@ -80,22 +80,22 @@ func (r *Repo) Get(ctx context.Context, tableName string, key Key, result interf
 	return nil
 }
 
-func (r *Repo) List(ctx context.Context, tableName string, limit int32, exclusiveStartKey Key, result interface{}) error {
+func (r *Repo) List(ctx context.Context, tableName string, limit int32, exclusiveStartKey Key, result interface{}) (Key, int32, error) {
 	out, err := r.db.Scan(ctx, &dynamodb.ScanInput{
 		TableName:         aws.String(tableName),
 		Limit:             &limit,
 		ExclusiveStartKey: exclusiveStartKey,
 	})
 	if err != nil {
-		return lhttp.Wrap(err, http.StatusNotFound, problemDetailDefault, errFetchingItems)
+		return Key{}, 0, lhttp.Wrap(err, http.StatusNotFound, problemDetailDefault, errFetchingItems)
 	}
 
 	err = attributevalue.UnmarshalListOfMaps(out.Items, result)
 	if err != nil {
-		return lhttp.Wrap(err, http.StatusNotFound, problemDetailUnmarshalling, errUnmarshallItems)
+		return Key{}, 0, lhttp.Wrap(err, http.StatusNotFound, problemDetailUnmarshalling, errUnmarshallItems)
 	}
 
-	return nil
+	return out.LastEvaluatedKey, out.ScannedCount, nil
 }
 
 func (r *Repo) Create(ctx context.Context, tableName string, item interface{}) error {

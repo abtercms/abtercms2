@@ -19,10 +19,10 @@ import (
 const (
 	limit int32 = 25
 
-	EnvAwsRegion           = "AWS_REGION"
-	EnvTableName           = "TABLE_NAME"
-	EnvAwsSamLocal         = "AWS_SAM_LOCAL"
-	EnvAwsDynamoDbEndpoint = "AWS_DYNAMODB_ENDPOINT"
+	EnvAwsRegion                = "AWS_REGION"
+	EnvTableName                = "TABLE_NAME"
+	EnvAwsSamLocal              = "AWS_SAM_LOCAL"
+	EnvAwsDynamoDbLocalEndpoint = "AWS_DYNAMODB_LOCAL_ENDPOINT"
 
 	trueString = "true"
 
@@ -42,7 +42,7 @@ func init() {
 	awsRegion = os.Getenv(EnvAwsRegion)
 	tableName = os.Getenv(EnvTableName)
 	if os.Getenv(EnvAwsSamLocal) == trueString {
-		dynamoDbEndpoint = os.Getenv(EnvAwsDynamoDbEndpoint)
+		dynamoDbEndpoint = os.Getenv(EnvAwsDynamoDbLocalEndpoint)
 	}
 
 	// UNIX Time is faster and smaller than most timestamps
@@ -63,8 +63,7 @@ func init() {
 }
 
 func main() {
-	lambda.Start(getHandler(sdkConfig, dynamoDbEndpoint).TestAny)
-	//lambda.Start(getRouter(getHandler(sdkConfig, dynamoDbEndpoint)).Handler)
+	lambda.Start(getRouter(getHandler(sdkConfig, dynamoDbEndpoint)).Handler)
 }
 
 type handler interface {
@@ -73,7 +72,7 @@ type handler interface {
 	RetrieveEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 	UpdateEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 	DeleteEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
-	TestAny(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
+	ListTables(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 }
 
 func getRouter(h handler) *lmdrouter.Router {
@@ -83,20 +82,6 @@ func getRouter(h handler) *lmdrouter.Router {
 	router.Route(http.MethodGet, "/:id", h.RetrieveEntity)
 	router.Route(http.MethodPut, "/:id", h.UpdateEntity)
 	router.Route(http.MethodDelete, "/:id", h.DeleteEntity)
-	router.Route(http.MethodConnect, "/:id", h.TestAny)
 
 	return router
-}
-
-type listParams struct {
-	ExclusiveStartKey string `lambda:"query.exclusive_start_key"` // a query parameter named "exclusive_start_key"
-}
-
-type entityParams struct {
-	ID string `lambda:"path.id"` // a path parameter declared as :id
-}
-
-type website struct {
-	ID   string `json:"pk"`
-	Name string `json:"name"`
 }

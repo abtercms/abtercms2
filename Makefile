@@ -21,6 +21,14 @@ aws-create-table-websites:
 curl-list-websites:
 	curl http:/127.0.0.1:3000/websites
 
+.PHONY: curl-create-website
+curl-create-website:
+	curl -d '{"foo":"bar"}' -H "Content-Type: application/json" -X POST http:/127.0.0.1:3000/websites
+
+.PHONY: curl-update-website-abc
+curl-update-website-abc:
+	curl -d '{"pk":"abc", "foo":"bar"}' -H "Content-Type: application/json" -X PUT http:/127.0.0.1:3000/websites/abc
+
 .PHONY: curl-get-website-abc
 curl-get-website-abc:
 	curl http:/127.0.0.1:3000/websites/abc
@@ -31,5 +39,5 @@ sam-local: build
 
 .PHONY: clean
 clean:
-	rm -rf .aws-sam
+	rm -rvf pkg/mocks websites/mocks .aws-sam
 

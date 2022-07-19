@@ -10,12 +10,6 @@ Globals:
   Function:
     Timeout: 5
 
-Parameters:
-  WebsitesTable:
-    Type: String
-    Description: has
-    Default: websites
-
 Resources:
   WebsitesFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -30,39 +24,38 @@ Resources:
       - x86_64
       Events:
         ListWebsites:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /websites
             Method: GET
         CreateWebsite:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /websites
             Method: POST
         GetWebsite:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /websites/{id}
             Method: GET
         UpdateWebsite:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /websites/{id}
             Method: PUT
         DeleteWebsite:
-          Type: HttpApi # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /websites/{id}
             Method: DELETE
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           TABLE_NAME: !Ref WebsitesTable
-          AWS_DYNAMODB_ENDPOINT: "http://127.0.0.1:8000"
+          AWS_DYNAMODB_LOCAL_ENDPOINT: "http://127.0.0.1:8000"
 
   WebsitesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
-      TableName: !Ref WebsitesTable
       PrimaryKey:
         Name: pk
         Type: String

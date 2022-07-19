@@ -15,7 +15,12 @@ import (
 )
 
 func TestRouter(t *testing.T) {
+	// hack needed because zerolog gets a global log builder
+	l := log.Logger
 	log.Logger = zerolog.Nop()
+	defer func() {
+		log.Logger = l
+	}()
 
 	t.Run("retrieve collection", func(t *testing.T) {
 		// stubs

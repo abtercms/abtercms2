@@ -42,4 +42,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/aquasecurity/lmdrouter v0.4.4 => github.com/shodgson/lmdrouterv2 v0.4.2
+//replace github.com/aquasecurity/lmdrouter v0.4.4 => github.com/shodgson/lmdrouterv2 v0.4.2
