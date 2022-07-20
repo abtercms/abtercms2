@@ -34,7 +34,6 @@ type website struct {
 }
 
 type repo interface {
-	ListTables(context.Context, int32) ([]string, error)
 	Get(context.Context, dynamo.Key, interface{}) error
 	List(context.Context, int32, dynamo.Key, interface{}) (dynamo.Key, int32, error)
 	Create(context.Context, interface{}) error
@@ -42,6 +41,7 @@ type repo interface {
 	Delete(context.Context, dynamo.Key) error
 }
 
+// Handler is a collection of handlers.
 type Handler struct {
 	repo repo
 }
@@ -52,19 +52,11 @@ func getHandler(sdkConfig aws.Config, tableName, dynamoDBEndpoint string) *Handl
 	}
 }
 
-func (h *Handler) ListTables(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	collection, err := h.repo.ListTables(ctx, limit)
-	if err != nil {
-		return lhttp.HandleError(err, nil)
-	}
-
-	return lmdrouter.MarshalResponse(http.StatusOK, nil, listResponse{Items: collection})
-}
-
+// RetrieveCollection is a handler to retrieve a collection.
 func (h *Handler) RetrieveCollection(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		params     listParams
-		collection []website
+		collection = []website{}
 	)
 
 	err := lmdrouter.UnmarshalRequest(req, false, &params)
@@ -80,6 +72,7 @@ func (h *Handler) RetrieveCollection(ctx context.Context, req events.APIGatewayP
 	return lmdrouter.MarshalResponse(http.StatusOK, nil, listResponse{Items: collection, LastEvaluatedKey: lastEvaluatedKey, ScannedCount: scannedCount})
 }
 
+// CreateEntity is a handler to create a new entity.
 func (h *Handler) CreateEntity(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		entity website
@@ -94,7 +87,7 @@ func (h *Handler) CreateEntity(ctx context.Context, req events.APIGatewayProxyRe
 		return lhttp.HandleError(fmt.Errorf(errPrimaryKeyNotAllowedDetail, entity.ID, errPrimaryKeyNotAllowed), nil)
 	}
 
-	entity.ID = id.NewGenerator().New().String()
+	entity.ID = id.NewGenerator().NewString()
 
 	err = h.repo.Create(ctx, entity)
 	if err != nil {
@@ -104,6 +97,7 @@ func (h *Handler) CreateEntity(ctx context.Context, req events.APIGatewayProxyRe
 	return lmdrouter.MarshalResponse(http.StatusCreated, nil, entity)
 }
 
+// RetrieveEntity is a handler to retrieve an entity.
 func (h *Handler) RetrieveEntity(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		params entityParams
@@ -125,12 +119,13 @@ func (h *Handler) RetrieveEntity(ctx context.Context, req events.APIGatewayProxy
 	}
 
 	if entity.ID == "" {
-		return lhttp.HandleError(lhttp.NewProblem(http.StatusNotFound, "", "website not found in storage"), nil)
+		return lhttp.HandleError(lhttp.NewProblem(http.StatusNotFound, "website not found in storage"), nil)
 	}
 
 	return lmdrouter.MarshalResponse(http.StatusOK, nil, entity)
 }
 
+// UpdateEntity is a handler to update an existing entity.
 func (h *Handler) UpdateEntity(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		entity website
@@ -159,6 +154,7 @@ func (h *Handler) UpdateEntity(ctx context.Context, req events.APIGatewayProxyRe
 	return lmdrouter.MarshalResponse(http.StatusOK, nil, entity)
 }
 
+// DeleteEntity is a handler to delete an existing entity.
 func (h *Handler) DeleteEntity(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
 		params entityParams

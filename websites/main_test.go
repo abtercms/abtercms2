@@ -26,7 +26,7 @@ func TestRouter(t *testing.T) {
 	}
 
 	t.Run("retrieve collection", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel() commented out because the log hack should not be run concurrently
 
 		// stubs
 		ctx := context.Background()
@@ -57,7 +57,7 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("create entity", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel() commented out because the log hack should not be run concurrently
 
 		// stubs
 		ctx := context.Background()
@@ -88,7 +88,7 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("retrieve entity", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel() commented out because the log hack should not be run concurrently
 
 		// stubs
 		ctx := context.Background()
@@ -120,7 +120,7 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("update entity", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel() commented out because the log hack should not be run concurrently
 
 		// stubs
 		ctx := context.Background()
@@ -152,7 +152,7 @@ func TestRouter(t *testing.T) {
 	})
 
 	t.Run("delete entity", func(t *testing.T) {
-		t.Parallel()
+		// t.Parallel() commented out because the log hack should not be run concurrently
 
 		// stubs
 		ctx := context.Background()

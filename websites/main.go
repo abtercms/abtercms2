@@ -31,8 +31,8 @@ const (
 )
 
 var (
-	errPrimaryKeyNotAllowed = lhttp.NewProblem(http.StatusBadRequest, "", "primary key is not allowed when creating entity.")
-	errInvalidID            = lhttp.NewProblem(http.StatusBadRequest, "", "received ids are invalid.")
+	errPrimaryKeyNotAllowed = lhttp.NewProblem(http.StatusBadRequest, "primary key is not allowed when creating entity.")
+	errInvalidID            = lhttp.NewProblem(http.StatusBadRequest, "received ids are invalid.")
 )
 
 func main() {
@@ -71,7 +71,6 @@ type handler interface {
 	RetrieveEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 	UpdateEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 	DeleteEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
-	ListTables(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 }
 
 func getRouter(h handler) *lmdrouter.Router {

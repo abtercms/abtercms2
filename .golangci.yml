@@ -1,10 +1,21 @@
 linters-settings:
+  cyclop:
+    # The maximal code complexity to report.
+    # Default: 10
+    max-complexity: 8
+    # The maximal average package complexity.
+    # If it's higher than 0.0 (float) the check is enabled
+    # Default: 0.0
+    package-average: 5.0
+    # Should ignore tests.
+    # Default: false
+    skip-tests: true
+
   exhaustruct:
     exclude:
     - 'dynamodb\.'
     - 'events\.APIGatewayProxyRequest$'
     - 'events\.APIGatewayProxyResponse$'
-    - 'mocks\.'
     - 'listResponse$'
 
   gci:
@@ -58,6 +69,7 @@ linters:
   - gofumpt
   - interfacer
   - maligned
+  - paralleltest
   - scopelint
 
 issues:
@@ -69,4 +81,25 @@ issues:
     - wrapcheck
   - path: _test\.go
     linters:
+    - dupl
+    - exhaustruct
     - funlen
+    - goerr113
+    - nosnakecase
+    - varnamelen
+  - path: _test\.go
+    text: "context-keys-type"
+    linters:
+    - revive
+  - path: _test\.go
+    text: "SA1029:"
+    linters:
+    - staticcheck
+  - path: _test\.go
+    text: "assignments should only be cuddled with other assignments"
+    linters:
+    - wsl
+  - path: _test\.go
+    text: "only one cuddle assignment allowed before range statement"
+    linters:
+    - wsl
