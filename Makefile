@@ -12,6 +12,10 @@ build: generate
 	go test ./...
 	sam build
 
+.PHONY: deploy
+deploy: build
+	sam deploy
+
 .PHONY: aws-list-tables
 aws-list-tables:
 	aws dynamodb list-tables --endpoint-url http://localhost:8000

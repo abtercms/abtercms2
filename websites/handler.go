@@ -7,7 +7,6 @@ import (
 
 	"github.com/aquasecurity/lmdrouter"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-sdk-go-v2/aws"
 
 	"github.com/abtercms/abtercms2/pkg/dynamo"
 	"github.com/abtercms/abtercms2/pkg/id"
@@ -35,7 +34,7 @@ type website struct {
 
 type repo interface {
 	Get(context.Context, dynamo.Key, interface{}) error
-	List(context.Context, int32, dynamo.Key, interface{}) (dynamo.Key, int32, error)
+	List(context.Context, int32, *dynamo.Key, interface{}) (dynamo.Key, int32, error)
 	Create(context.Context, interface{}) error
 	Update(context.Context, interface{}) error
 	Delete(context.Context, dynamo.Key) error
@@ -46,25 +45,31 @@ type Handler struct {
 	repo repo
 }
 
-func getHandler(sdkConfig aws.Config, tableName, dynamoDBEndpoint string) *Handler {
+func NewHandler(repo repo) *Handler {
 	return &Handler{
-		repo: dynamo.NewRepo(sdkConfig, tableName, dynamoDBEndpoint),
+		repo: repo,
 	}
 }
 
 // RetrieveCollection is a handler to retrieve a collection.
 func (h *Handler) RetrieveCollection(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var (
-		params     listParams
-		collection = []website{}
+		exclusiveStartKey *dynamo.Key
+		params            listParams
+		collection        = []website{}
 	)
 
 	err := lmdrouter.UnmarshalRequest(req, false, &params)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallParams, req.QueryStringParameters), nil)
 	}
 
-	lastEvaluatedKey, scannedCount, err := h.repo.List(ctx, limit, dynamo.K1(params.ExclusiveStartKey), &collection)
+	if params.ExclusiveStartKey != "" {
+		esk := dynamo.K1(params.ExclusiveStartKey)
+		exclusiveStartKey = &esk
+	}
+
+	lastEvaluatedKey, scannedCount, err := h.repo.List(ctx, limit, exclusiveStartKey, &collection)
 	if err != nil {
 		return lhttp.HandleError(err, nil)
 	}
@@ -80,7 +85,7 @@ func (h *Handler) CreateEntity(ctx context.Context, req events.APIGatewayProxyRe
 
 	err := lmdrouter.UnmarshalRequest(req, true, &entity)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallBody, req.Body), nil)
 	}
 
 	if entity.ID != "" {
@@ -106,11 +111,11 @@ func (h *Handler) RetrieveEntity(ctx context.Context, req events.APIGatewayProxy
 
 	err := lmdrouter.UnmarshalRequest(req, false, &params)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallParams, req.QueryStringParameters), nil)
 	}
 
 	if params.ID == "" {
-		return lhttp.HandleError(fmt.Errorf(errInvalidIDDetail, params.ID, "", errInvalidID), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(errInvalidID, http.StatusBadRequest, errInvalidIDDetail, params.ID, "", errInvalidID.Error()), nil)
 	}
 
 	err = h.repo.Get(ctx, dynamo.K1(params.ID), &entity)
@@ -134,16 +139,16 @@ func (h *Handler) UpdateEntity(ctx context.Context, req events.APIGatewayProxyRe
 
 	err := lmdrouter.UnmarshalRequest(req, true, &entity)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallBody, req.Body), nil)
 	}
 
 	err = lmdrouter.UnmarshalRequest(req, false, &params)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallParams, req.QueryStringParameters), nil)
 	}
 
 	if params.ID == "" || params.ID != entity.ID {
-		return lhttp.HandleError(fmt.Errorf(errInvalidIDDetail, params.ID, entity.ID, errInvalidID), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(errInvalidID, http.StatusBadRequest, errInvalidIDDetail, params.ID, entity.ID, errInvalidID.Error()), nil)
 	}
 
 	err = h.repo.Update(ctx, entity)
@@ -162,7 +167,7 @@ func (h *Handler) DeleteEntity(ctx context.Context, req events.APIGatewayProxyRe
 
 	err := lmdrouter.UnmarshalRequest(req, false, &params)
 	if err != nil {
-		return lhttp.HandleError(fmt.Errorf(errUnmarshallRequest, err), nil)
+		return lhttp.HandleError(lhttp.WrapProblem(err, http.StatusBadRequest, errUnmarshallParams, req.QueryStringParameters), nil)
 	}
 
 	err = h.repo.Delete(ctx, dynamo.K1(params.ID))

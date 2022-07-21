@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
+	"github.com/abtercms/abtercms2/pkg/dynamo"
 	"github.com/abtercms/abtercms2/pkg/lhttp"
 )
 
@@ -25,8 +26,9 @@ const (
 
 	trueString = "true"
 
-	errUnmarshallRequest          = "failed to unmarshalling request, err: %w"
-	errInvalidIDDetail            = "value in path: \"%s\", in payload: \"%s\", err: %w"
+	errUnmarshallBody             = "failed to unmarshal the request, body: %s"
+	errUnmarshallParams           = "failed to unmarshal the request, query: %v"
+	errInvalidIDDetail            = "value in path: \"%s\", in payload: \"%s\", err: %s"
 	errPrimaryKeyNotAllowedDetail = "primary key: \"%s\", err: %w"
 )
 
@@ -62,7 +64,8 @@ func main() {
 			Msg("cannot establish connection with dynamodb")
 	}
 
-	lambda.Start(getRouter(getHandler(sdkConfig, tableName, dynamoDBEndpoint)).Handler)
+	repo := dynamo.NewRepo(sdkConfig, tableName, dynamoDBEndpoint)
+	lambda.Start(NewRouter(NewHandler(repo)).Handler)
 }
 
 type handler interface {
@@ -73,7 +76,7 @@ type handler interface {
 	DeleteEntity(context.Context, events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error)
 }
 
-func getRouter(h handler) *lmdrouter.Router {
+func NewRouter(h handler) *lmdrouter.Router {
 	router := lmdrouter.NewRouter("/websites", lhttp.LoggerMiddleware)
 	router.Route(http.MethodGet, "", h.RetrieveCollection)
 	router.Route(http.MethodPost, "", h.CreateEntity)

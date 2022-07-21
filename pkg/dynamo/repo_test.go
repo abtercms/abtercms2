@@ -62,7 +62,7 @@ func TestRepo_List(t *testing.T) {
 
 		// stubs
 		var limitStub int32 = 25
-		var exclusiveStartKeyStub dynamo.Key
+		var exclusiveStartKeyStub *dynamo.Key
 		var itemStub *dynamodb.ScanOutput
 		actualList := []T{}
 
@@ -87,7 +87,7 @@ func TestRepo_List(t *testing.T) {
 
 		// stubs
 		var limitStub int32 = 25
-		var exclusiveStartKeyStub dynamo.Key
+		var exclusiveStartKeyStub *dynamo.Key
 		actualList := []T{}
 
 		// system under test
@@ -139,7 +139,7 @@ func TestRepo_List(t *testing.T) {
 			Return(itemStubs, nil)
 
 		// execute
-		actualLastEvaluatedKey, actualScannedCount, err := sut.List(ctx, limitStub, exclusiveStartKeyStub, &actualList)
+		actualLastEvaluatedKey, actualScannedCount, err := sut.List(ctx, limitStub, &exclusiveStartKeyStub, &actualList)
 
 		// asserts
 		require.NoError(t, err, "Get() error = %v", err)

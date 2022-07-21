@@ -46,7 +46,7 @@ func TestRouter(t *testing.T) {
 			Return(responseStub, nil)
 
 		// system under test
-		sut := getRouter(handlerMock)
+		sut := NewRouter(handlerMock)
 
 		// execute
 		res, err := sut.Handler(ctx, requestStub)
@@ -77,7 +77,7 @@ func TestRouter(t *testing.T) {
 			Return(responseStub, nil)
 
 		// system under test
-		sut := getRouter(handlerMock)
+		sut := NewRouter(handlerMock)
 
 		// execute
 		res, err := sut.Handler(ctx, requestStub)
@@ -109,7 +109,7 @@ func TestRouter(t *testing.T) {
 			Return(responseStub, nil)
 
 		// system under test
-		sut := getRouter(handlerMock)
+		sut := NewRouter(handlerMock)
 
 		// execute
 		res, err := sut.Handler(ctx, requestStub)
@@ -141,7 +141,7 @@ func TestRouter(t *testing.T) {
 			Return(responseStub, nil)
 
 		// system under test
-		sut := getRouter(handlerMock)
+		sut := NewRouter(handlerMock)
 
 		// execute
 		res, err := sut.Handler(ctx, requestStub)
@@ -173,7 +173,7 @@ func TestRouter(t *testing.T) {
 			Return(responseStub, nil)
 
 		// system under test
-		sut := getRouter(handlerMock)
+		sut := NewRouter(handlerMock)
 
 		// execute
 		res, err := sut.Handler(ctx, requestStub)

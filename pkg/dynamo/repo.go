@@ -68,13 +68,13 @@ func (r *Repo) SetDB(db DB) *Repo {
 }
 
 // List lists existing records in the table assigned to the repository.
-func (r *Repo) List(ctx context.Context, limit int32, exclusiveStartKey Key, result interface{}) (Key, int32, error) {
+func (r *Repo) List(ctx context.Context, limit int32, exclusiveStartKey *Key, result interface{}) (Key, int32, error) {
 	params := &dynamodb.ScanInput{
 		TableName: aws.String(r.tableName),
 		Limit:     &limit,
 	}
-	if len(exclusiveStartKey) > 0 {
-		params.ExclusiveStartKey = exclusiveStartKey
+	if exclusiveStartKey != nil {
+		params.ExclusiveStartKey = *exclusiveStartKey
 	}
 
 	out, err := r.db.Scan(ctx, params)
